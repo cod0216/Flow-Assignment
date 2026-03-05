@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>파일 확장자 차단</title>
+    <style>
+        :root {
+            --bg: #f4f6fb;
+            --card: #ffffff;
+            --line: #d9deea;
+            --text: #1d2538;
+            --muted: #677189;
+            --accent: #1e5eff;
+            --danger: #d32f2f;
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: "Noto Sans KR", sans-serif;
+            color: var(--text);
+            background: radial-gradient(circle at top, #eef3ff 0%, var(--bg) 40%);
+        }
+
+        .wrap {
+            max-width: 860px;
+            margin: 40px auto;
+            padding: 0 16px;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 10px 28px rgba(30, 53, 122, 0.08);
+        }
+
+        h1 { margin: 0 0 18px; font-size: 24px; }
+        h2 { margin: 26px 0 10px; font-size: 18px; }
+
+        .hint {
+            color: var(--muted);
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        .fixed-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+        }
+
+        label {
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #fbfcff;
+        }
+
+        .row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        input[type="text"] {
+            height: 40px;
+            border-radius: 10px;
+            border: 1px solid var(--line);
+            padding: 0 12px;
+            min-width: 260px;
+            flex: 1;
+        }
+
+        button {
+            height: 40px;
+            border: none;
+            border-radius: 10px;
+            padding: 0 14px;
+            background: var(--accent);
+            color: #fff;
+            cursor: pointer;
+        }
+
+        ul {
+            list-style: none;
+            margin: 12px 0 0;
+            padding: 0;
+            border-top: 1px solid var(--line);
+        }
+
+        li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 4px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .remove {
+            background: transparent;
+            color: var(--danger);
+            border: 1px solid #f1b6b6;
+            height: 30px;
+            padding: 0 10px;
+        }
+
+        .message {
+            margin-top: 10px;
+            font-size: 14px;
+            color: var(--muted);
+            min-height: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <div class="card">
+        <h1>파일 확장자 차단</h1>
+        <p class="hint">고정 확장자는 체크 시 차단됩니다. 커스텀 확장자는 최대 200개, 입력 길이 최대 20자입니다.</p>
+
+        <h2>고정 확장자</h2>
+        <div id="fixedGrid" class="fixed-grid"></div>
+
+        <h2>커스텀 확장자</h2>
+        <div class="row">
+            <input id="customInput" type="text" maxlength="20" placeholder="확장자를 입력하세요 (예: sh)" />
+            <button id="addBtn" type="button">추가</button>
+        </div>
+        <p id="countText" class="hint">0 / 200</p>
+        <ul id="customList"></ul>
+
+        <p id="message" class="message"></p>
+    </div>
+</div>
+
+<script>
+    const fixedGrid = document.getElementById('fixedGrid');
+    const customInput = document.getElementById('customInput');
+    const addBtn = document.getElementById('addBtn');
+    const customList = document.getElementById('customList');
+    const countText = document.getElementById('countText');
+    const message = document.getElementById('message');
+
+    function setMessage(text) {
+        message.textContent = text || '';
+    }
+
+    async function request(url, options = {}) {
+        const response = await fetch(url, {
+            headers: { 'Content-Type': 'application/json' },
+            ...options
+        });
+
+        const body = await response.json();
+
+        if (!response.ok) {
+            throw new Error(body.message || '요청 중 오류가 발생했습니다.');
+        }
+
+        return body.data;
+    }
+
+    function renderFixed(list) {
+        fixedGrid.innerHTML = '';
+        list.forEach(item => {
+            const label = document.createElement('label');
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = item.blocked;
+
+            checkbox.addEventListener('change', async () => {
+                try {
+                    await request(`/api/v1/fixed-extensions/${item.extension}`, {
+                        method: 'PUT',
+                        body: JSON.stringify({ blocked: checkbox.checked })
+                    });
+                    setMessage('고정 확장자 상태가 저장되었습니다.');
+                } catch (e) {
+                    checkbox.checked = !checkbox.checked;
+                    setMessage(e.message);
+                }
+            });
+
+            const text = document.createElement('span');
+            text.textContent = item.extension;
+            label.appendChild(checkbox);
+            label.appendChild(text);
+            fixedGrid.appendChild(label);
+        });
+    }
+
+    function renderCustom(list) {
+        customList.innerHTML = '';
+        list.forEach(item => {
+            const li = document.createElement('li');
+            const name = document.createElement('span');
+            name.textContent = item.extension;
+
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'remove';
+            removeBtn.textContent = 'X';
+            removeBtn.addEventListener('click', async () => {
+                try {
+                    await request(`/api/v1/custom-extensions/${item.id}`, { method: 'DELETE' });
+                    setMessage('커스텀 확장자가 삭제되었습니다.');
+                    await load();
+                } catch (e) {
+                    setMessage(e.message);
+                }
+            });
+
+            li.appendChild(name);
+            li.appendChild(removeBtn);
+            customList.appendChild(li);
+        });
+    }
+
+    async function load() {
+        try {
+            const policy = await request('/api/v1/extensions/policy');
+            renderFixed(policy.fixedExtensions || []);
+            renderCustom(policy.customExtensions || []);
+            countText.textContent = `${policy.customCount} / ${policy.customLimit}`;
+        } catch (e) {
+            setMessage(e.message);
+        }
+    }
+
+    addBtn.addEventListener('click', async () => {
+        const extension = customInput.value;
+
+        try {
+            await request('/api/v1/custom-extensions', {
+                method: 'POST',
+                body: JSON.stringify({ extension })
+            });
+            customInput.value = '';
+            setMessage('커스텀 확장자가 추가되었습니다.');
+            await load();
+        } catch (e) {
+            setMessage(e.message);
+        }
+    });
+
+    load();
+</script>
+</body>
+</html>
