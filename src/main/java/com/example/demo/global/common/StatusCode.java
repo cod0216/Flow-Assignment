@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
  * DATE              AUTHOR             NOTE<br>
  * -----------------------------------------------------------<br>
  * 26.03.05          cod0216            최초 생성<br>
+ * 26.03.06          cod0216            파일 업로드 검증/저장 관련 코드 추가<br>
  */
 public enum StatusCode {
     SUCCESS(HttpStatus.OK, "SUCCESS-200", "요청이 완료되었습니다."),
@@ -22,6 +23,11 @@ public enum StatusCode {
 
     FIXED_EXTENSION_NOT_FOUND(HttpStatus.NOT_FOUND, "EXT-404-001", "고정 확장자를 찾을 수 없습니다."),
     CUSTOM_EXTENSION_NOT_FOUND(HttpStatus.NOT_FOUND, "EXT-404-002", "커스텀 확장자를 찾을 수 없습니다."),
+    FILE_EMPTY(HttpStatus.BAD_REQUEST, "FILE-400-001", "업로드 파일이 비어 있습니다."),
+    FILE_EXTENSION_BLOCKED(HttpStatus.BAD_REQUEST, "FILE-400-002", "차단된 확장자 파일은 업로드할 수 없습니다."),
+    FILE_MIME_BLOCKED(HttpStatus.BAD_REQUEST, "FILE-400-003", "위험한 MIME 타입 파일은 업로드할 수 없습니다."),
+    FILE_SIGNATURE_BLOCKED(HttpStatus.BAD_REQUEST, "FILE-400-004", "위험한 파일 시그니처가 감지되었습니다."),
+    FILE_STORE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "FILE-500-001", "파일 저장 중 오류가 발생했습니다."),
 
     CUSTOM_EXTENSION_DUPLICATE(HttpStatus.CONFLICT, "EXT-409-001", "이미 존재하는 커스텀 확장자입니다."),
 
