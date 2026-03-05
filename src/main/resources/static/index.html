@@ -117,6 +117,14 @@
             color: var(--muted);
             min-height: 20px;
         }
+
+        .upload-box {
+            margin-top: 20px;
+            padding: 16px;
+            border: 1px dashed var(--line);
+            border-radius: 12px;
+            background: #fafcff;
+        }
     </style>
 </head>
 <body>
@@ -136,6 +144,16 @@
         <p id="countText" class="hint">0 / 200</p>
         <ul id="customList"></ul>
 
+        <h2>파일 업로드 테스트</h2>
+        <div class="upload-box">
+            <div class="row">
+                <input id="fileInput" type="file" />
+                <button id="uploadBtn" type="button">업로드</button>
+            </div>
+            <p class="hint">차단 확장자 또는 위험한 시그니처(MZ/ELF/Mach-O/쉘스크립트)는 업로드가 거부됩니다.</p>
+            <p id="uploadResult" class="hint"></p>
+        </div>
+
         <p id="message" class="message"></p>
     </div>
 </div>
@@ -147,14 +165,22 @@
     const customList = document.getElementById('customList');
     const countText = document.getElementById('countText');
     const message = document.getElementById('message');
+    const fileInput = document.getElementById('fileInput');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const uploadResult = document.getElementById('uploadResult');
 
     function setMessage(text) {
         message.textContent = text || '';
     }
 
     async function request(url, options = {}) {
+        const headers = {};
+        if (!(options.body instanceof FormData)) {
+            headers['Content-Type'] = 'application/json';
+        }
+
         const response = await fetch(url, {
-            headers: { 'Content-Type': 'application/json' },
+            headers,
             ...options
         });
 
@@ -245,6 +271,29 @@
             setMessage('커스텀 확장자가 추가되었습니다.');
             await load();
         } catch (e) {
+            setMessage(e.message);
+        }
+    });
+
+    uploadBtn.addEventListener('click', async () => {
+        const file = fileInput.files && fileInput.files[0];
+        if (!file) {
+            setMessage('업로드할 파일을 선택해주세요.');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const uploaded = await request('/api/v1/files/upload', {
+                method: 'POST',
+                body: formData
+            });
+            uploadResult.textContent = `업로드 성공: ${uploaded.originalFileName} -> ${uploaded.storedFileName}`;
+            setMessage('파일 업로드가 완료되었습니다.');
+        } catch (e) {
+            uploadResult.textContent = '';
             setMessage(e.message);
         }
     });

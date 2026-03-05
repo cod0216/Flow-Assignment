@@ -13,3 +13,14 @@ CREATE TABLE IF NOT EXISTS custom_extension (
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT uq_custom_extension UNIQUE (extension)
 );
+
+CREATE TABLE IF NOT EXISTS uploaded_file (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    original_file_name VARCHAR(255) NOT NULL,
+    stored_file_name VARCHAR(255) NOT NULL,
+    extension VARCHAR(20) NOT NULL,
+    mime_type VARCHAR(100) NOT NULL,
+    file_size BIGINT NOT NULL,
+    storage_path VARCHAR(500) NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
