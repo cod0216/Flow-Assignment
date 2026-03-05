@@ -1,0 +1,16 @@
+assignmnet.pdf
+assignment-requirements-facts.md
+user-personas.md
+url-based-upload-policy-idea.md
+
+.omx/
+AGENTS.md
+.agents/
+.codex/
+
+# local/system artifacts
+.DS_Store
+.idea/
+.gradle/
+build/
+out/
