@@ -65,6 +65,45 @@
 - `uploaded_file` (추가 구현)
   - 업로드된 파일 메타정보(원본명/저장명/확장자/MIME/경로/크기) 저장
 
+### 4-1) ASCII ERD
+```text
++------------------------------+
+| fixed_extension              |
++------------------------------+
+| PK id BIGINT                 |
+| UQ extension VARCHAR(20)     |
+| blocked BOOLEAN              |
+| created_at DATETIME          |
+| updated_at DATETIME          |
++------------------------------+
+
++------------------------------+
+| custom_extension             |
++------------------------------+
+| PK id BIGINT                 |
+| UQ extension VARCHAR(20)     |
+| created_at DATETIME          |
++------------------------------+
+
++------------------------------+
+| uploaded_file                |
++------------------------------+
+| PK id BIGINT                 |
+| original_file_name VARCHAR   |
+| stored_file_name VARCHAR     |
+| extension VARCHAR(20)        |
+| mime_type VARCHAR(100)       |
+| file_size BIGINT             |
+| storage_path VARCHAR(500)    |
+| created_at DATETIME          |
++------------------------------+
+
+논리 관계(서비스 레벨):
+fixed_extension ----\
+                     >---- (업로드 차단 정책 판단) ---- uploaded_file 저장
+custom_extension ---/
+```
+
 ## 5) API 요약
 
 - `GET /api/v1/fixed-extensions`
