@@ -14,3 +14,6 @@ AGENTS.md
 .gradle/
 build/
 out/
+
+# local runtime config
+src/main/resources/application.properties
