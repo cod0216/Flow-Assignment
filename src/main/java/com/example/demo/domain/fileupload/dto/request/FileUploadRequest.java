@@ -3,6 +3,7 @@ package com.example.demo.domain.fileupload.dto.request;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -15,8 +16,10 @@ import org.springframework.web.multipart.MultipartFile;
  * DATE              AUTHOR             NOTE<br>
  * -----------------------------------------------------------<br>
  * 26.03.06          cod0216            최초 생성<br>
+ * 26.03.06          cod0216            Multipart 바인딩을 위한 setter 추가<br>
  */
 @Getter
+@Setter
 @NoArgsConstructor
 public class FileUploadRequest {
 
